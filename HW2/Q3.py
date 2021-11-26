@@ -1,6 +1,9 @@
 from scipy.io import wavfile
 import matplotlib.pyplot as plt
 import numpy as np
+from scipy import signal
+
+
 
 Fs, sig = wavfile.read('guitartune.wav')
 d = 15  # in seconds
@@ -37,4 +40,37 @@ plt.show()
 ifft2 = np.fft.ifft(np.fft.ifft(sig))
 
 wavfile.write('ifft guitar.wav', Fs, (ifft2*2**16).astype(np.int16))
+
+# applying some filters
+
+# Butterworth filter
+b, a = signal.butter(N=5, Wn=200, fs=Fs)
+output = signal.filtfilt(b, a, sig)
+wavfile.write('Butterworth.wav', Fs, (output*2**16).astype(np.int16))
+
+# Bessel filter
+b2, a2 = signal.bessel(N=5, Wn=0.5, analog=True)
+output = signal.filtfilt(b2, a2, sig)
+wavfile.write('Bessel.wav', Fs, (output*2**16).astype(np.int16))
+
+# Flattop filter
+window = signal.flattop(20)
+b3 = np.ones(window.__len__()) * (1/window.__len__())
+output = signal.filtfilt(b3, a2, sig)
+wavfile.write('Flattop.wav', Fs, (output*2**16).astype(np.int16))
+# w, h = scipy.signal.freqz(b, fs=2*np.pi*Fs)
+# angles = np.unwrap(np.angle(h))
+#
+# fig1, ax1 = plt.subplots()
+# ax1.plot(w, 20 * np.log10(np.abs(h)), 'b')
+# ax1.set_xlabel('Frequency [Hz]')
+# ax1.set_ylabel('Amplitude [dB]', color='b')
+# ax1.set_title('Butterworth frequency and phase response in semi-log scale')
+# ax1.grid(axis='both', which='both')
+# ax1.axvline(200, color='red', lw=1)  # cut-off frequency
+# ax1.set_xscale("log")
+#
+# fig3, ax3 = plt.subplots()
+# ax3.plot(w, angles, 'g')
+# ax3.set_ylabel('Angle [rad]', color='g')
 
